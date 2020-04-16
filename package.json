@@ -1,0 +1,33 @@
+{
+  "name": "babelnovel-discord",
+  "version": "1.0.0",
+  "description": "Discord bot for babelnovel content",
+  "main": "server.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ringuh/babelnovel-discord-mongoose.git"
+  },
+  "keywords": [
+    "babelnovel",
+    "discord"
+  ],
+  "author": "rimlu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ringuh/babelnovel-discord-mongoose/issues"
+  },
+  "homepage": "https://github.com/ringuh/babelnovel-discord-mongoose#readme",
+  "dependencies": {
+    "@typegoose/typegoose": "^6.4.0",
+    "@types/mongoose": "^5.7.11",
+    "@types/node": "^13.11.1",
+    "@types/puppeteer": "^2.0.1",
+    "chalk": "^4.0.0",
+    "discord.js": "^12.1.1",
+    "mongoose": "^5.9.9",
+    "puppeteer": "^3.0.0"
+  }
+}

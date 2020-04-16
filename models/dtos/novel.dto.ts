@@ -1,0 +1,53 @@
+import { AuthorDTO } from "./author.dto";
+import { GenreDTO } from "./genre.dto"
+import { SourceDTO } from "./source.dto";
+import { BookStrategyDTO } from "./bookStrategy.dto";
+import { LastChapterDTO } from "./lastChapter.dto";
+import { BookStopNoticeDTO } from "./bookStopNotice.dto";
+import { PromotionDTO } from "./promotion.dto";
+
+export interface NovelDTO {
+    author: AuthorDTO;
+    lastChapter: LastChapterDTO;
+    source: SourceDTO;
+    publisher?: any;
+    genres: GenreDTO[];
+    genreIds: string[];
+    chapterCount: number;
+    translator?: any;
+    bookStrategy: BookStrategyDTO;
+    bookStopNotice?: BookStopNoticeDTO;
+    isShowStrategy: boolean;
+    isPay: boolean;
+    enabledProofReading: boolean;
+    promotion?: PromotionDTO;
+    authorId: string;
+    isCopyrightAuthorized: string;
+    cover: string;
+    volume?: any;
+    editorId?: any;
+    name: string;
+    originRefId: string;
+    publisherId?: any;
+    publishTime: string;
+    synopsis: string;
+    tag: string;
+    translatorId?: any;
+    enSerial?: any;
+    status: number;
+    alias: string;
+    canonicalName: string;
+    cnName: string;
+    copyright: string;
+    historyCanonicalName: string;
+    serial?: any;
+    subTitle: string;
+    ratingNum: number;
+    releasedChapterCount: number;
+    cpEnCompanyName: string;
+    corpusBookId: number;
+    sensitivityRating: string;
+    updateTime: string;
+    createTime: string;
+    id: string;
+}
