@@ -1,10 +1,17 @@
-import { connect, launch, Browser } from 'puppeteer';
+import { connect, launch, Browser, Page } from 'puppeteer';
 import { config, Setting } from '../models';
 import { Collections } from '../models/enums/collections.enum';
-const { red, green, yellow } = require('chalk').bold;
+import { Interceptions } from '../models/enums/interceptions.enum';
+import { LiveMessage } from '../funcs/liveMessage';
+import { waitFor } from '../funcs/waitFor';
+import { fstat, readSync, readFileSync, existsSync, writeFileSync } from 'fs';
+import { join } from 'path';
+const { red, green, yellow, magenta } = require('chalk').bold;
 let browser: Browser = null;
+const puppeteerFile = join(__dirname, "../static/cache/puppeteer.json");
 
 export async function launchBrowser(allow?: boolean): Promise<Browser> {
+    console.log(__dirname);
     if (browser?.isConnected()) return browser;
 
     const headless = `chrome_${config.identifier}`;
@@ -30,9 +37,87 @@ export async function launchBrowser(allow?: boolean): Promise<Browser> {
         args: ['--mute-audio', '--disable-setuid-sandbox']
     }).finally(() => console.log(yellow("Started a new browser")))
 
-    if(!setting) setting = new Setting({ server: config.identifier, key: headless});
+    if (!setting) setting = new Setting({ server: config.identifier, key: headless });
     setting.value = browser.wsEndpoint();
     await setting.save();
 
     return browser
+}
+
+
+export const InitialPage = async (browser: Browser, interception: Interceptions, liveMessage: LiveMessage) => {
+    const limitNr = 3;
+    for (let attemptNr = 0; attemptNr < limitNr; ++attemptNr) {
+        let page: Page;
+        try {
+            liveMessage.fetchingCookie(attemptNr, limitNr)
+            page = await browser.newPage();
+            await page.goto("https://babelnovel.com/search");
+            // lets find that history-text
+            const h2s = await page.evaluate(() =>
+                Array.from(
+                    document.querySelectorAll('h2'),
+                    element => element.textContent.trim().toLowerCase())
+            );
+
+            if (!h2s.includes("history")) throw {}
+            await setInterception(page, interception)
+            return page
+        } catch (e) {
+            await waitFor()
+            await page.close()
+            page = null
+            continue
+        }
+    }
+    return null
+}
+
+
+interface PuppeteerBusyInterface {
+    timestamp: number;
+    identifier: string;
+}
+
+async function setInterception(page: Page, interception: Interceptions): Promise<void> {
+    const incp = Interceptions;
+    const priorityList = [];
+
+    await page.setRequestInterception(true);
+    page.on('request', async request => {
+        if (!request.isNavigationRequest()) {
+            if (config.bad_requests &&
+                config.bad_requests.some((str: string) => request.url().includes(str)))
+                return request.abort()
+            return request.continue();
+        }
+
+        const data: PuppeteerBusyInterface = getPuppeteerFile();
+
+        let delay = config.numerics.puppeteer_request_delay;
+        const url = request.url()
+        if (!url.includes("/api/")) delay = 500
+
+        const timestamp = Date.now() + delay - data.timestamp;
+        if (timestamp < config.numerics.puppeteer_busy_duration) {
+            console.log("Puppeter is busy")
+            request.abort()
+        }
+
+        console.log(url, magenta(delay))
+        await page.waitFor(delay)
+        writePuppeteerFile(interception, Date.now())
+        request.continue();
+    });
+
+
+}
+
+export function writePuppeteerFile(identifier: string, timestamp = 0) {
+    writeFileSync(puppeteerFile, JSON.stringify({ identifier: identifier, timestamp: timestamp }));
+}
+
+export function getPuppeteerFile() {
+    if (!existsSync(puppeteerFile)) writeFileSync(puppeteerFile, JSON.stringify({ identifier: null, timestamp: 0 }));
+    return JSON.parse(readFileSync(puppeteerFile, { encoding: 'utf8' }));
 }

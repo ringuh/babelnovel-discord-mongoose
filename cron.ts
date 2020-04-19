@@ -1,7 +1,7 @@
 import { Browser } from "puppeteer";
 import { launchBrowser } from "./babel/headlessChrome";
-import { fetchNovels } from "./babel/fetchNovels";
 import './extensions/message.extension'
+import { fetchNovels } from "./babel/novelFunctions";
 
 !(async () => {
     let browser:Browser = null;

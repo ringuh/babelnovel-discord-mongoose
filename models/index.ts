@@ -1,7 +1,10 @@
-const config = require('../config.json');
+const config: ConfigInterface = require('../config.json');
 import { Setting } from './setting.model'
 import { connect } from 'mongoose';
-connect('mongodb://localhost/babelnovel', {useNewUrlParser: true});
+import { Novel } from './novel.model';
+import { Chapter } from './chapter.model';
+import { ConfigInterface } from './interfaces/config.interface';
+connect('mongodb://localhost/babelnovel', { useNewUrlParser: true, useUnifiedTopology: true });
 
 
-export { Setting, config };
+export { Setting, Novel, Chapter, config };

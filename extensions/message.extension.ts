@@ -19,7 +19,7 @@ declare module 'discord.js' {
 
 }
 
-Message.prototype.expire = async function (prevMsg?: Message, keep?: boolean, expire: number = config.numerics.epub_lifespan_seconds) {
+Message.prototype.expire = async function (prevMsg?: Message, keep?: boolean, expire: number = config.numerics.message_lifespan) {
     if (prevMsg) {
         prevMsg.channel.stopTyping(true)
         if (!keep) await prevMsg.delete({ timeout: expire, reason: 'scheduled' }).catch(() => null)

@@ -1,6 +1,6 @@
 export enum Interceptions {
-    list,
-    novel,
-    chapters,
-    track
+    list = "list",
+    novel = "novels",
+    chapters = "chapters",
+    track = "track"
 }

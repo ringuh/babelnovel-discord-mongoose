@@ -1,9 +1,7 @@
 import { config } from "../models";
 const { gray } = require('chalk').bold;
 
-export async function waitFor(ms: number = config.numerics.retry_seconds) {
+export function waitFor(ms: number = config.numerics.retry_after): Promise<boolean> {
     console.log(gray(`Waiting for ${ms}`))
-    await new Promise(resolve => setTimeout(() => resolve(), ms))
-    console.log("return")
-    return true
+    return new Promise(resolve => setTimeout(() => resolve(true), ms))
 }

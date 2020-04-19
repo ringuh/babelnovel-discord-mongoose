@@ -17,19 +17,15 @@ const loadCommands = (filePath: string) => {
     const folders = fs.readdirSync(filePath, { withFileTypes: true }).filter(file => file.isDirectory());
     const commandFiles = fs.readdirSync(filePath, { withFileTypes: true }).filter(file => file.name.endsWith('.ts'));
     for (const file of commandFiles) {
-        console.log(file, path.join(filePath, file.name))
-        const command = require(path.join(filePath, file.name));
-        console.log(command)
-        command?.name?.forEach((al: string) => commands.set(al, command))
+        const command = require(path.join(filePath, file.name)).default;
+        command.name?.forEach((al: string) => commands.set(al, command))
     }
     folders.forEach(folder => loadCommands(require('path').join(filePath, folder.name)))
 };
 loadCommands(path.join(__dirname, "commands"))
 
-
-
-
 client.on('message', message => {
+    console.log(message.content)
     // ignore non-prefix and other bots excluding REPEAT BOT 621467973122654238
     if (!message.content.startsWith(config.prefix) ||
         (message.author.bot &&
@@ -60,11 +56,12 @@ client.on('message', message => {
     
     try {
         let cmd: any = commands.get(command)
+        console.log(cmd)
         if (botPermission(message, cmd.permissions))
             cmd.execute(message, args, parameters);
     } catch (error) {
         console.error(error.message);
-        message.reply('there was an error trying to execute that command!');
+        message.reply(`Error: ${error.message}`);
     }
 });
 
