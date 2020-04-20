@@ -11,7 +11,6 @@ let browser: Browser = null;
 const puppeteerFile = join(__dirname, "../static/cache/puppeteer.json");
 
 export async function launchBrowser(allow?: boolean): Promise<Browser> {
-    console.log(__dirname);
     if (browser?.isConnected()) return browser;
 
     const headless = `chrome_${config.identifier}`;
@@ -76,13 +75,10 @@ export const InitialPage = async (browser: Browser, interception: Interceptions,
 
 interface PuppeteerBusyInterface {
     timestamp: number;
-    identifier: string;
+    interception: Interceptions;
 }
 
 async function setInterception(page: Page, interception: Interceptions): Promise<void> {
-    const incp = Interceptions;
-    const priorityList = [];
-
     await page.setRequestInterception(true);
     page.on('request', async request => {
         if (!request.isNavigationRequest()) {
@@ -98,26 +94,32 @@ async function setInterception(page: Page, interception: Interceptions): Promise
         const url = request.url()
         if (!url.includes("/api/")) delay = 500
 
-        const timestamp = Date.now() + delay - data.timestamp;
-        if (timestamp < config.numerics.puppeteer_busy_duration) {
-            console.log("Puppeter is busy")
-            request.abort()
+        const timestamp = Date.now() - data.timestamp;
+
+        if (interception > data.interception && timestamp < config.numerics.puppeteer_busy_duration) {
+            console.log(magenta("Puppeter was busy"))
+            return request.abort('aborted');
         }
 
         console.log(url, magenta(delay))
         await page.waitFor(delay)
         writePuppeteerFile(interception, Date.now())
-        request.continue();
+        return request.continue();
     });
 
-
+    page.on('requestfinished', async request => {
+        if (request.isNavigationRequest()) {
+            console.log("finished")
+            writePuppeteerFile(Interceptions.finished, Date.now())
+        }
+    });
 }
 
-export function writePuppeteerFile(identifier: string, timestamp = 0) {
-    writeFileSync(puppeteerFile, JSON.stringify({ identifier: identifier, timestamp: timestamp }));
+export function writePuppeteerFile(interception: Interceptions, timestamp = 0) {
+    writeFileSync(puppeteerFile, JSON.stringify({ interception: interception, timestamp: timestamp }));
 }
 
 export function getPuppeteerFile() {
-    if (!existsSync(puppeteerFile)) writeFileSync(puppeteerFile, JSON.stringify({ identifier: null, timestamp: 0 }));
+    if (!existsSync(puppeteerFile)) writeFileSync(puppeteerFile, JSON.stringify({ interception: Interceptions.finished, timestamp: 0 }));
     return JSON.parse(readFileSync(puppeteerFile, { encoding: 'utf8' }));
 }
