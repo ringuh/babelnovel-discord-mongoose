@@ -1,6 +1,4 @@
 import { Message } from "discord.js";
-import { User } from "discord.js";
-import { isAdmin } from "../funcs/commandTools";
 import { ClientUser } from "discord.js";
 import { Collection } from "discord.js";
 import { MessageReaction } from "discord.js";
@@ -16,15 +14,15 @@ declare module 'discord.js' {
         expire(prevMsg?: Message, keep?: boolean, expire?: number): void
         bin(prevMsg?: Message, expire?: boolean): void
     }
-
 }
 
-Message.prototype.expire = async function (prevMsg?: Message, keep?: boolean, expire: number = config.numerics.message_lifespan) {
-    if (prevMsg) {
-        prevMsg.channel.stopTyping(true)
-        if (!keep) await prevMsg.delete({ timeout: expire, reason: 'scheduled' }).catch(() => null)
-    }
-    if (!keep) await this.delete(expire).catch(() => null)
+
+Message.prototype.expire = async function (prevMsg?: Message, keep?: boolean, expire: number = config.numerics.message_lifespan, deleter?: ClientUser) {
+    prevMsg?.channel.stopTyping(true)
+    const deleteReason = deleter ? `Deleted by ${deleter.username}` : `expiration timer ${expire}`;
+    if (!keep) await this.delete({ timeout: expire, reason: deleteReason })
+        .then(() => prevMsg?.delete().catch(() => null))
+        .catch(() => null)
 };
 
 
@@ -42,13 +40,16 @@ Message.prototype.bin = async function (prevMsg?: Message, expire?: boolean) {
 
     try { await this.react(binIcon) } catch (error) { }
     this.awaitReactions(filter, { max: 1 })
-        .then((collected: Collection<String, MessageReaction>) => {
-            const reaction = collected.first()
+        .then(async (collected: Collection<String, MessageReaction>) => {
+            const reaction = collected.last()
+            const deleter = await reaction.users.fetch().then(users => users.find(user => user.id !== this.author.id));
+
             if (reaction.emoji.name === binIcon)
-                this.expire(prevMsg, false, 1)
+                this.expire(prevMsg, false, 1, deleter)
         });
     if (expire) {
         this.expire(prevMsg)
     }
 }
+
 

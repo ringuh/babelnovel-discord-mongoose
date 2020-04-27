@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { botPermission } from './funcs/commandTools';
-import './extensions/message.extension'
+import './extensions'
 import { launchBrowser } from './babel/headlessChrome';
 
 const client = new Client();
@@ -27,7 +27,8 @@ loadCommands(path.join(__dirname, "commands"))
 client.on('message', message => {
     console.log(message.content)
     // ignore non-prefix and other bots excluding REPEAT BOT 621467973122654238
-    if (!message.content.startsWith(config.prefix) ||
+    if (message.channel.type !== "text" ||
+        !message.content.startsWith(config.prefix) ||
         (message.author.bot &&
             (!config.bypass_bots.includes(message.author.id)
                 || message.author.id === client.user.id
@@ -53,7 +54,7 @@ client.on('message', message => {
         }
         return arg
     }).filter(arg => arg)
-    
+
     try {
         let cmd: any = commands.get(command)
         console.log(cmd)

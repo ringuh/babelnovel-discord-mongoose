@@ -1,5 +1,7 @@
 import { Message } from 'discord.js';
 import { config } from '../models';
+import { TextChannel } from 'discord.js';
+import { PermissionString } from 'discord.js';
 const { bypass_list } = config;
 
 
@@ -25,13 +27,11 @@ export function usageMessage(message: Message, command: any): void {
     ).then((msg: Message) => msg.expire(message))
 };
 
-export function botPermission(message: Message, permissions: string | string[], reply: boolean = true): boolean {
+export function botPermission(message: Message, permissions: PermissionString[], reply: boolean = true): boolean {
     if (!permissions) return true
-    if (typeof (permissions) === "string")
-        permissions = [permissions]
-
-    // @ts-ignore
-    const botPermissionsFor = message.channel.permissionsFor(message.guild.me)
+    
+    const channel: TextChannel = message.channel.type === 'text' ? message.channel: null;
+    const botPermissionsFor = channel.permissionsFor(message.guild.me)
     if (botPermissionsFor.has('ADMINISTRATOR')) return true
 
     const response = !permissions.some(permission => {
