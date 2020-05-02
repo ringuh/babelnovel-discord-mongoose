@@ -8,6 +8,7 @@ import { waitFor } from "../../funcs/waitFor"
 import { CodeList } from "../../models/enums/codeList.enum"
 import { config } from "../../models"
 import { updateFromPageApi } from "./updateFromPageApi"
+import { fetchFromNovelApi } from "./fetchFromNovelApi"
 
 const { red, gray, magenta, yellow, green } = require('chalk').bold
 
@@ -16,7 +17,7 @@ interface jsonDTO {
     data: PageApiDTO[]
 }
 
-async function fetchNovelsFromPageApi(browser: Browser, chapterLimit: number): Promise<ReturnObject> {
+async function fetchFromPageApi(browser: Browser, chapterLimit: number): Promise<ReturnObject> {
     const liveMessage = new LiveMessage()
     const page: Page = await InitialPage(browser, chapterLimit ? Interceptions.novels_latest : Interceptions.novels_all, liveMessage)
     if (!page) return await liveMessage.fetchingCookieFailed()
@@ -52,22 +53,19 @@ async function fetchNovelsFromPageApi(browser: Browser, chapterLimit: number): P
                 break;
             }
             console.log(novelData.canonicalName, novelData.releasedChapterCount)
-            
-             const res = await updateFromPageApi(novelData, liveMessage);
-             if (res.code === CodeList.novel_created) {
-                 console.log("new novel")
-                 //await novel.fetchNovel(page, liveMessage)
-             } 
 
+            const res = await updateFromPageApi(novelData, liveMessage);
+            if (res.code === CodeList.novel_created) {
+                await fetchFromNovelApi(page, novelData.id, liveMessage);
+            }
         }
 
         pageNr++;
-        break;
     }
     return { code: CodeList.success, message: "Fetched novels" }
 }
 
 
-export { fetchNovelsFromPageApi }
+export { fetchFromPageApi }
 
 

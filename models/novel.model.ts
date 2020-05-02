@@ -33,6 +33,7 @@ interface NovelTimestamp {
     novelApiCheckedAt?: string,
     chapterCheckedAt?: string,
     chapterUpdatedAt?: string,
+    lastHundredUpdatedAt?: string,
 }
 
 interface AuthorName {

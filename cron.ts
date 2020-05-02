@@ -1,33 +1,38 @@
 import { Browser } from "puppeteer";
 import { launchBrowser } from "./babel/headlessChrome";
 import './extensions/message.extension'
-import { fetchNovelsFromPageApi } from "./babel/novel/fetchNovelsFromPageApi";
+import { fetchFromPageApi } from "./babel/novel/fetchFromPageApi";
 
 
-!(async () => {
-    let browser:Browser = null;
+try {
+    !(async () => {
+        let browser: Browser = null;
 
-    if (process.argv.includes('novels')) {
-        browser = await launchBrowser()
-        const chapterLimit = process.argv.includes('all') ? 0 : 1000;
-        await fetchNovelsFromPageApi(browser, chapterLimit)
-    }
+        if (process.argv.includes('novels')) {
+            browser = await launchBrowser()
+            const chapterLimit = process.argv.includes('all') ? 0 : 450;
+            await fetchFromPageApi(browser, chapterLimit)
+        }
 
-    if (process.argv.includes('track')) {
-        browser = await launchBrowser()
-       /*  const chapterLimit = 
-        await fetchNovel(browser, ) */
-    }
+        if (process.argv.includes('track')) {
+            browser = await launchBrowser()
+            /*  const chapterLimit = 
+             await fetchNovel(browser, ) */
+        }
 
-    if(process.argv.includes('update')) {
-        browser = await launchBrowser()
-    }   
+        if (process.argv.includes('update')) {
+            browser = await launchBrowser()
+        }
 
-    else if (process.argv.includes('raw')) {
-        browser = await launchBrowser()
-    }
+        else if (process.argv.includes('raw')) {
+            browser = await launchBrowser()
+        }
 
-    if (browser) browser.disconnect()
-    console.log("EXIT CRON", process.argv)
+        if (browser) browser.disconnect()
+        console.log("EXIT CRON", process.argv)
+        process.exit();
+    })();
+} catch (err) {
+    console.error(err)
     process.exit();
-})();
+}

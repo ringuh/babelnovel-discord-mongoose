@@ -25,9 +25,12 @@
     "@types/mongoose": "^5.7.11",
     "@types/node": "^13.11.1",
     "@types/puppeteer": "^2.0.1",
+    "axios": "^0.19.2",
     "chalk": "^4.0.0",
+    "datetime-difference": "^1.0.2",
     "discord.js": "^12.1.1",
     "mongoose": "^5.9.9",
-    "puppeteer": "^3.0.2"
+    "puppeteer": "^3.0.2",
+    "sharp": "^0.25.2"
   }
 }

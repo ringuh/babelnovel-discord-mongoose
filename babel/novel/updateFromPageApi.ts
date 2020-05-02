@@ -35,7 +35,7 @@ export async function updateFromPageApi(json: PageApiDTO, liveMessage: LiveMessa
     }
 
     const originalJson = novel.toJSON()
-    console.log(originalJson)
+    
     novel.name = {
         ...novel.name,
         en: json.name,
@@ -43,7 +43,7 @@ export async function updateFromPageApi(json: PageApiDTO, liveMessage: LiveMessa
         canonical: json.canonicalName,
         historyCanonical: json.historyCanonicalName,
         search: json.name.toLowerCase(),
-        aliases: json.alias?.split("|").filter(t => t && t.trim().length) || []
+        aliases: json.alias?.split("|").filter(t => t && t.trim().length) || novel.name?.aliases || []
     };
     novel.timestamp = {
         ...novel.timestamp,
@@ -52,10 +52,10 @@ export async function updateFromPageApi(json: PageApiDTO, liveMessage: LiveMessa
     };
     novel.status.isRemoved = false;
     novel.cover = novel.cover || json.cover;
-    if (json.synopsis !== novel.synopsis)
+    if (json.synopsis?.length && json.synopsis !== novel.synopsis)
         novel.synopsis = json.synopsis;
-    novel.genre = json.genres?.map(genre => genre.name) || novel.genre || [];
-    novel.tag = json.tag?.split("|").filter(t => t && t.trim().length) || novel.tag || [];
+    novel.genre = json.genres?.map(genre => genre.name.toLowerCase()) || novel.genre || [];
+    novel.tag = json.tag?.toLowerCase().split("|").filter(t => t && t.trim().length) || novel.tag || [];
     novel.releasedChapterCount = json.releasedChapterCount;
 
 
@@ -64,16 +64,14 @@ export async function updateFromPageApi(json: PageApiDTO, liveMessage: LiveMessa
     Object.keys(originalJson).filter(key => !key.startsWith('_')).map(key => {
         if (JSON.stringify(originalJson[key]) !== JSON.stringify(novel[key])) differencesCount++;
     });
-    console.log(differencesCount);
+
 
     if (differencesCount) novel.timestamp.updatedAt = timestamp;
     novel.timestamp.pageApiCheckedAt = timestamp;
 
-    await novel.save().then(success => {
+    return await novel.save().then(success => {
         if (!differencesCount) return liveMessage.novelChecked();
         if (novelCreated) return liveMessage.novelCreated(novel)
         return liveMessage.novelUpdated(novel)
     }).catch(err => liveMessage.novelUpdateFailed(err, novel))
-
-    return liveMessage.novelChecked()
 }
