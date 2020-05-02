@@ -47,8 +47,8 @@ export default {
 
         const embed = new MessageEmbed()
             .setDescription(`${config.numerics.latest_chapter_limit} ${messageTitle} novels with most chapters`)
-            .addField(null, null)
-
+            .addField('\u200b', '\u200b')
+            
         let toFile = [
             "<html><header><style>",
             "body { margin: 0.5em }",

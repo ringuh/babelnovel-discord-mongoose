@@ -20,6 +20,7 @@ interface NovelTranslations {
 interface NovelStatus {
     isRemoved: boolean,
     isPay?: boolean,
+    isDeleted?: boolean,
     limitedFree?: Date,
     limitedDiscount?: Date
 }
@@ -51,7 +52,7 @@ class Novels {
     @prop() ratingNum?: number;
     @prop() tag?: Array<string>;
     @prop() genre?: string[];
-    @prop() source?: string;
+    @prop() sourceUrl?: string
     @prop() synopsis?: string;
     @prop() status: NovelStatus;
     @prop() translation: NovelTranslations;

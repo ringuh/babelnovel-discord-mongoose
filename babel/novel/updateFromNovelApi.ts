@@ -44,6 +44,8 @@ async function updateFromNovelApi(json: NovelDTO, liveMessage: LiveMessage): Pro
     if (json.synopsis?.length && json.synopsis !== novel.synopsis)
         novel.synopsis = json.synopsis;
 
+    novel.sourceUrl = novel.sourceUrl || json.source.url;
+    novel.ratingNum = json.ratingNum;
     novel.cover = novel.cover || json.cover;
     novel.genre = json.genres?.map(genre => genre.name.toLowerCase()) || novel.genre || [];
     novel.tag = json.tag?.toLowerCase().split("|").filter(t => t && t.trim().length) || novel.tag || [];
@@ -70,7 +72,7 @@ async function updateFromNovelApi(json: NovelDTO, liveMessage: LiveMessage): Pro
 
 
     // once in a while check if the previously failed cover download would succeed now
-    if(novel.cover.endsWith("default_cover.png") && Math.floor(Math.random() * 20) > 18)
+    if (novel.cover.endsWith("default_cover.png") && Math.floor(Math.random() * 20) > 18)
         novel.cover = json.cover;
 
     novel.cover = await downloadCover(novel);

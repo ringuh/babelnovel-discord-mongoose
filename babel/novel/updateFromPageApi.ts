@@ -28,6 +28,8 @@ export async function updateFromPageApi(json: PageApiDTO, liveMessage: LiveMessa
                 completed: false,
                 ignore: false
             },
+            releasedChapterCount: 0,
+            epubCount: 0,
             status: { isRemoved: false }
         }
         novel = await Novel.create(novelArgs);
