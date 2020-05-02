@@ -1,12 +1,14 @@
-import { Novel, config } from "../models"
+import { PageApiDTO } from "../../models/dtos/pageApi.dto"
 import { Browser, Page } from "puppeteer"
-import { PageApiDTO } from "../models/dtos/pageApi.dto"
-import { ReturnObject } from "../models/interfaces/returnObject.interface"
-import { LiveMessage } from "../funcs/liveMessage"
-import { waitFor } from "../funcs/waitFor"
-import { CodeList } from "../models/enums/codeList.enum"
-import { InitialPage } from "./headlessChrome"
-import { Interceptions } from "../models/enums/interceptions.enum"
+import { ReturnObject } from "../../models/interfaces/returnObject.interface"
+import { LiveMessage } from "../../funcs/liveMessage"
+import { InitialPage } from "../headlessChrome"
+import { Interceptions } from "../../models/enums/interceptions.enum"
+import { waitFor } from "../../funcs/waitFor"
+import { CodeList } from "../../models/enums/codeList.enum"
+import { config } from "../../models"
+import { updateFromPageApi } from "./updateFromPageApi"
+
 const { red, gray, magenta, yellow, green } = require('chalk').bold
 
 interface jsonDTO {
@@ -14,7 +16,7 @@ interface jsonDTO {
     data: PageApiDTO[]
 }
 
-export async function fetchNovels(browser: Browser, chapterLimit: number): Promise<ReturnObject> {
+async function fetchNovelsFromPageApi(browser: Browser, chapterLimit: number): Promise<ReturnObject> {
     const liveMessage = new LiveMessage()
     const page: Page = await InitialPage(browser, chapterLimit ? Interceptions.novels_latest : Interceptions.novels_all, liveMessage)
     if (!page) return await liveMessage.fetchingCookieFailed()
@@ -50,21 +52,22 @@ export async function fetchNovels(browser: Browser, chapterLimit: number): Promi
                 break;
             }
             console.log(novelData.canonicalName, novelData.releasedChapterCount)
-            /*  const novel = new Novel(novelData.id);
-             await novel.getDoc()
-             const res = await novel.updateFromPageApi(novelData, liveMessage);
+            
+             const res = await updateFromPageApi(novelData, liveMessage);
              if (res.code === CodeList.novel_created) {
-                 await novel.fetchNovel(page, liveMessage)
-             } */
+                 console.log("new novel")
+                 //await novel.fetchNovel(page, liveMessage)
+             } 
 
         }
 
         pageNr++;
+        break;
     }
     return { code: CodeList.success, message: "Fetched novels" }
 }
 
 
-
+export { fetchNovelsFromPageApi }
 
 

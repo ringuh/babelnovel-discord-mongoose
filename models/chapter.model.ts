@@ -21,7 +21,7 @@ interface ChapterStatus {
     attempts?: number,
 }
 
-export class ChapterClass {
+export class Chapters {
     @prop() babelId: string;
     @prop() novelId: string;
     @prop() prevId?: string;
@@ -39,6 +39,6 @@ export class ChapterClass {
 }
 
 
-const Chapter = getModelForClass(ChapterClass)
+const Chapter = getModelForClass(Chapters)
 
 export { Chapter };

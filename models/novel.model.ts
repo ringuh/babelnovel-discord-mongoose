@@ -4,43 +4,47 @@ const { green, red, yellow, magenta } = require("chalk").bold;
 
 interface NovelName {
     en: string,
-    raw: string,
-    canonical: string,
-    historyCanonical: string,
-    search: string,
-    abbr: string,
-    aliases: string[]
+    raw?: string,
+    canonical?: string,
+    historyCanonical?: string,
+    search?: string,
+    abbr?: string,
+    aliases?: string[]
 }
 interface NovelTranslations {
-    hiatus: boolean,
-    completed: boolean,
-    ignore: boolean
+    hiatus?: boolean,
+    completed?: boolean,
+    ignore?: boolean
 }
 
 interface NovelStatus {
     isRemoved: boolean,
-    isPay: boolean,
-    limitedFree: Date,
-    limitedDiscount: Date
+    isPay?: boolean,
+    limitedFree?: Date,
+    limitedDiscount?: Date
 }
 
 interface NovelTimestamp {
     createdAt: string,
-    updatedAt: string,
-    checkedAt: string,
-    successAt: string
+    updatedAt?: string,
+    babelCreatedAt?: string,
+    babelUpdatedAt?: string,
+    pageApiCheckedAt?: string,
+    novelApiCheckedAt?: string,
+    chapterCheckedAt?: string,
+    chapterUpdatedAt?: string,
 }
 
 interface AuthorName {
     name: string,
-    enName: string,
+    enName?: string,
 }
 
-export class NovelClass {
+class Novels {
     @prop() babelId: string;
-    @prop() name?: NovelName;
+    @prop() name: NovelName;
     @prop() cover?: string;
-    @prop() author?: AuthorName;
+    @prop() author: AuthorName;
     @prop() releasedChapterCount?: number;
     @prop() epubCount?: number;
     @prop() ratingNum?: number;
@@ -48,12 +52,11 @@ export class NovelClass {
     @prop() genre?: string[];
     @prop() source?: string;
     @prop() synopsis?: string;
-    @prop() status?: NovelStatus;
-    @prop() translation?: NovelTranslations;
-    @prop() timestamp?: NovelTimestamp;
-    @prop() chapterList?: Array<ChapterList>;
+    @prop() status: NovelStatus;
+    @prop() translation: NovelTranslations;
+    @prop() timestamp: NovelTimestamp;
 }
 
-const Novel = getModelForClass(NovelClass);
+const Novel = getModelForClass(Novels);
 
-export { Novel }
+export { Novel, Novels }

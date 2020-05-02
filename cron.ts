@@ -1,7 +1,8 @@
 import { Browser } from "puppeteer";
 import { launchBrowser } from "./babel/headlessChrome";
 import './extensions/message.extension'
-import { fetchNovels } from "./babel/novelFunctions";
+import { fetchNovelsFromPageApi } from "./babel/novel/fetchNovelsFromPageApi";
+
 
 !(async () => {
     let browser:Browser = null;
@@ -9,7 +10,7 @@ import { fetchNovels } from "./babel/novelFunctions";
     if (process.argv.includes('novels')) {
         browser = await launchBrowser()
         const chapterLimit = process.argv.includes('all') ? 0 : 1000;
-        await fetchNovels(browser, chapterLimit)
+        await fetchNovelsFromPageApi(browser, chapterLimit)
     }
 
     if (process.argv.includes('track')) {
@@ -27,4 +28,6 @@ import { fetchNovels } from "./babel/novelFunctions";
     }
 
     if (browser) browser.disconnect()
+    console.log("EXIT CRON", process.argv)
+    process.exit();
 })();

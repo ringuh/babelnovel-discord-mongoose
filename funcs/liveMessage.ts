@@ -1,7 +1,7 @@
 import { Message } from "discord.js";
 import { CodeList } from "../models/enums/codeList.enum";
 import { ReturnObject } from "../models/interfaces/returnObject.interface";
-import { NovelClass } from "../models/novel.model";
+import { Novels } from "../models/novel.model";
 const { white, gray, cyan, yellow, magenta, red, green, blue } = require('chalk').bold;
 
 export class LiveMessage {
@@ -11,13 +11,13 @@ export class LiveMessage {
 
     }
 
-    novelCreated(novel: NovelClass) {
+    novelCreated(novel: Novels) {
         const text = `Added novel ${novel.name.canonical}`;
         console.log(green(text));
         return { code: CodeList.novel_created, message: text }
     }
 
-    novelCreationFailed(error: any, novel: NovelClass) {
+    novelCreationFailed(error: any, novel: Novels) {
         const text = `Failed to add novel ${novel.name.canonical}\n${error.message}`
         console.log(red(text));
         return { code: CodeList.novel_creation_failed, message: text }
@@ -40,7 +40,7 @@ export class LiveMessage {
         return { code: CodeList.novel_fetch_error, message: text }
     }
 
-    novelUpdated(novel: NovelClass) {
+    novelUpdated(novel: Novels) {
         const text = `Updated Novel ${novel.name.canonical}`
         console.log(yellow(text))
         return { code: CodeList.novel_updated, message: text }
@@ -51,7 +51,7 @@ export class LiveMessage {
         return { code: CodeList.novel_checked, message: text }
     }
 
-    novelUpdateFailed(error: any, novel: NovelClass) {
+    novelUpdateFailed(error: any, novel: Novels) {
         const text = `Failed to fetch update novel ${novel.name.canonical}\n${error.message}`;
         console.log(magenta(text))
         return { code: CodeList.novel_update_failed, message: text }
@@ -77,12 +77,12 @@ export class LiveMessage {
         return { code: CodeList.babel_cookie_missing, message: text }
     }
 
-    async fetchChapterGroups(novel: NovelClass, attemptNr: number, limitNr: number) {
+    async fetchChapterGroups(novel: Novels, attemptNr: number, limitNr: number) {
         console.log(green(`Fetching chapters for ${novel.name.canonical} ${attemptNr} / ${limitNr}`))
 
     }
 
-    async fetchChapterGroupsWrongCode(novel: NovelClass, code: number) {
+    async fetchChapterGroupsWrongCode(novel: Novels, code: number) {
 
     }
 

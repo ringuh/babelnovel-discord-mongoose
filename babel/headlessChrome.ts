@@ -32,13 +32,22 @@ export async function launchBrowser(allow?: boolean): Promise<Browser> {
     if (!allow) throw {
         code: 99, message: "Not allowed to open new browser"
     }
+    console.log("trying to open new one")
+    browser = null;
     browser = await launch({
         args: ['--mute-audio', '--disable-setuid-sandbox']
-    }).finally(() => console.log(yellow("Started a new browser")))
+    }).then(async (selain) => {
+        console.log(yellow("Started a new browser"))
+        if (!setting) setting = new Setting({ server: config.identifier, key: headless });
+        setting.value = selain.wsEndpoint();
+        await setting.save();
+        return selain
+    }).catch(err => {
+        console.log(red(err.message))
+        return null
+    });
 
-    if (!setting) setting = new Setting({ server: config.identifier, key: headless });
-    setting.value = browser.wsEndpoint();
-    await setting.save();
+
 
     return browser
 }
@@ -109,7 +118,6 @@ async function setInterception(page: Page, interception: Interceptions): Promise
 
     page.on('requestfinished', async request => {
         if (request.isNavigationRequest()) {
-            console.log("finished")
             writePuppeteerFile(Interceptions.finished, Date.now())
         }
     });

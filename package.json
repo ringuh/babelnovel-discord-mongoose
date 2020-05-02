@@ -28,6 +28,6 @@
     "chalk": "^4.0.0",
     "discord.js": "^12.1.1",
     "mongoose": "^5.9.9",
-    "puppeteer": "^3.0.0"
+    "puppeteer": "^3.0.2"
   }
 }

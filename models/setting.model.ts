@@ -7,14 +7,14 @@ enum SETTING_TYPES {
 }
 
 
-class SettingClass {
+class Settings {
     @prop() server: string;
     @prop() key: string;
     @prop() value: string | number | boolean;
     @prop() type?: SETTING_TYPES;
 }
 
-const Setting = getModelForClass(SettingClass);
+const Setting = getModelForClass(Settings);
 
 
 export { Setting }
