@@ -58,8 +58,9 @@ async function fetchFromPageApi(browser: Browser, chapterLimit: number): Promise
             if (res.code === CodeList.novel_created) {
                 await fetchFromNovelApi(page, novelData.id, liveMessage);
             }
+            break
         }
-
+break
         pageNr++;
     }
     return { code: CodeList.success, message: "Fetched novels" }

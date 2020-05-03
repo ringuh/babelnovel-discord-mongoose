@@ -2,6 +2,7 @@ import { Message } from 'discord.js';
 import { config } from '../models';
 import { TextChannel } from 'discord.js';
 import { PermissionString } from 'discord.js';
+const { red, gray, magenta, yellow, green, blue } = require('chalk').bold
 const { bypass_list } = config;
 
 
@@ -29,8 +30,8 @@ export function usageMessage(message: Message, command: any): void {
 
 export function botPermission(message: Message, permissions: PermissionString[], reply: boolean = true): boolean {
     if (!permissions) return true
-    
-    const channel: TextChannel = message.channel.type === 'text' ? message.channel: null;
+
+    const channel: TextChannel = message.channel.type === 'text' ? message.channel : null;
     const botPermissionsFor = channel.permissionsFor(message.guild.me)
     if (botPermissionsFor.has('ADMINISTRATOR')) return true
 
@@ -46,3 +47,7 @@ export function botPermission(message: Message, permissions: PermissionString[],
 
     return response
 }
+
+
+
+export { red, gray, magenta, yellow, green, blue }

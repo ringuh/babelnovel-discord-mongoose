@@ -42,9 +42,9 @@ Message.prototype.bin = async function (prevMsg?: Message, expire?: boolean) {
     this.awaitReactions(filter, { max: 1 })
         .then(async (collected: Collection<String, MessageReaction>) => {
             const reaction = collected.last()
-            const deleter = await reaction.users.fetch().then(users => users.find(user => user.id !== this.author.id));
+            const deleter = await reaction?.users.fetch().then(users => users.find(user => user.id !== this.author.id));
 
-            if (reaction.emoji.name === binIcon)
+            if (reaction?.emoji.name === binIcon)
                 this.expire(prevMsg, false, 1, deleter)
         });
     if (expire) {

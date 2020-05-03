@@ -52,13 +52,16 @@ async function updateFromNovelApi(json: NovelDTO, liveMessage: LiveMessage): Pro
     novel.releasedChapterCount = json.releasedChapterCount;
 
     if (json.promotion?.endTime) {
+        console.log("endtime")
         const now = new Date();
         const endTime = new Date(json.promotion.endTime);
+        console.log(endTime > now, json.promotion.promotionType)
         if (endTime > now) {
-            if (json.promotion.promotionType === promotionType.limited_free)
-                novel.status.limitedFree = endTime;
-            else if (json.promotion.promotionType === promotionType.discount)
-                novel.status.limitedDiscount = endTime
+            novel.status = {
+                ...novel.status,
+                limitedFree: json.promotion.promotionType === promotionType.limit_free ? endTime : null,
+                limitedDiscount: json.promotion.promotionType === promotionType.discount ? endTime : null
+            }
         }
     }
 
@@ -68,8 +71,10 @@ async function updateFromNovelApi(json: NovelDTO, liveMessage: LiveMessage): Pro
         if (JSON.stringify(originalJson[key]) !== JSON.stringify(novel[key])) differencesCount++;
     });
 
-    if (differencesCount) novel.timestamp.updatedAt = timestamp;
-
+    if (differencesCount) novel.timestamp = {
+        ...novel.timestamp,
+        updatedAt: timestamp
+    }
 
     // once in a while check if the previously failed cover download would succeed now
     if (novel.cover.endsWith("default_cover.png") && Math.floor(Math.random() * 20) > 18)

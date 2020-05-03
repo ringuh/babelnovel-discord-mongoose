@@ -5,7 +5,7 @@ import { Novel } from './novel.model';
 import { Chapter } from './chapter.model';
 import { ConfigInterface } from './interfaces/config.interface';
 import { CommandRestriction } from './commandRestriction.model';
-connect('mongodb://localhost/babelnovel', { useNewUrlParser: true, useUnifiedTopology: true });
+connect('mongodb://localhost/babelnovel', { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 
 
 export { Setting, Novel, Chapter, CommandRestriction, config };

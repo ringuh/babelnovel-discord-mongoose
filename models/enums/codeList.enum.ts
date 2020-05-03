@@ -23,6 +23,7 @@ export enum CodeList {
     novel_updated = 82, 
     novel_creation_failed = 83,
     novel_update_failed = 84,
+    novel_premium = 86,
     novel_fetch_checked = 90,
     novel_fetch_created = 91,
     novel_fetch_updated = 92, 

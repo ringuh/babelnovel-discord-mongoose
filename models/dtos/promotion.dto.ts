@@ -1,6 +1,6 @@
 export enum promotionType {
     discount = "discount",
-    limited_free = "limited_free"
+    limit_free = "limit_free"
 }
 
 export interface PromotionDTO {

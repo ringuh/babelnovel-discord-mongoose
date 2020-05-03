@@ -25,7 +25,6 @@ const loadCommands = (filePath: string) => {
 loadCommands(path.join(__dirname, "commands"))
 
 client.on('message', message => {
-    console.log(message.content)
     // ignore non-prefix and other bots excluding REPEAT BOT 621467973122654238
     if (message.channel.type !== "text" ||
         !message.content.startsWith(config.prefix) ||
@@ -57,7 +56,6 @@ client.on('message', message => {
 
     try {
         let cmd: any = commands.get(command)
-        console.log(cmd)
         if (botPermission(message, cmd.permissions))
             cmd.execute(message, args, parameters);
     } catch (error) {

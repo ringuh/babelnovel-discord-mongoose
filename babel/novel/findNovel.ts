@@ -27,35 +27,11 @@ export async function findNovel(message: Message, args: string[]): Promise<Novel
     });
 
     if(novels.length === 1)
-        return novels[0];
+        return novels.pop();
     
     novels.sort((a, b) => a.name.en.length - b.name.en.length).splice(5, novels.length);
-    
+
     returnNovel = await MessageTemplate(message, novels, novelString)
-    console.log(novels.map(novel => novel.name.en))
-    /*  
-     let queries = novelString.includes("-") ? ['name.canonical', 'babelId', 'name.search'] : ['name.abbr', 'name.search']
-     let query: CollectionReference;
-     let results: QuerySnapshot;
-     const collection = db.collection(Collections.novels)
- 
-     for (let i in queries) {
-         query = collection.where(queries[i], '==', novelString).limit(1)
-         results = await query.get()
-         if (results.empty) continue
-         results.forEach((result: DocumentSnapshot) => returnNovel = result.data());
-         if (returnNovel) return returnNovel
-     }
-     if (novelString.length > 2) {
-         query = collection.where('name.search', '>=', novelString).orderBy('name.search').limit(5)
-         results = await query.get()
-         if (!results.empty) {
-             const alternatives = []
-             results.forEach(r => alternatives.push(r.data()))
-             returnNovel = await MessageTemplate(message, alternatives, novelString)
-         }
-     }
-  */
 
     if (!returnNovel) {
         const notFound = `Novel '${novelString}' not found`

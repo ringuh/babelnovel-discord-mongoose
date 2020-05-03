@@ -9,10 +9,12 @@ interface ChapterContent {
 
 interface ChapterTimestamp {
     createdAt: string,
-    updatedAt: string,
-    checkedAt: string,
-    successAt: string,
-    attemptedAt: string,
+    updatedAt?: string,
+    babelCreatedAt?: string,
+    babelUpdatedAt?: string,
+    checkedAt?: string,
+    successAt?: string,
+    attemptedAt?: string,
 }
 
 interface ChapterStatus {
@@ -21,7 +23,7 @@ interface ChapterStatus {
     attempts?: number,
 }
 
-export class Chapters {
+class Chapters {
     @prop() babelId: string;
     @prop() novelId: string;
     @prop() prevId?: string;
@@ -30,15 +32,15 @@ export class Chapters {
     @prop() index?: number;
     @prop() name?: string;
     @prop() canonicalName?: string;
-    @prop() content?: ChapterContent;
-    @prop() status?: ChapterStatus;
+    @prop() content: ChapterContent;
+    @prop() status: ChapterStatus;
     @prop() zhSourceURL?: string;
     @prop() zhTitle?: string;
-    @prop() timestamp?: ChapterTimestamp;
+    @prop() timestamp: ChapterTimestamp;
     @prop() originalData?: any;
 }
 
 
 const Chapter = getModelForClass(Chapters)
 
-export { Chapter };
+export { Chapter, Chapters };

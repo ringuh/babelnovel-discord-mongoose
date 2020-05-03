@@ -2,6 +2,7 @@ import { Message } from "discord.js";
 import { CodeList } from "../models/enums/codeList.enum";
 import { ReturnObject } from "../models/interfaces/returnObject.interface";
 import { Novels } from "../models/novel.model";
+import { Chapters } from "../models/chapter.model";
 const { white, gray, cyan, yellow, magenta, red, green, blue } = require('chalk').bold;
 
 export class LiveMessage {
@@ -57,6 +58,14 @@ export class LiveMessage {
         return { code: CodeList.novel_update_failed, message: text }
     }
 
+    async novelIsPremium(): Promise<ReturnObject> {
+        const text = "Novel is premium";
+        console.log(red(text));
+        await this._sent?.edit(text, { code: true }).then((msg: Message) => msg.bin(this._message, true))
+        return { code: CodeList.chapter_premium, message: text }
+
+    }
+
     jsonParseError(error: any) {
         console.log(red(`JSON parse error: ${error.message}`))
     }
@@ -90,13 +99,38 @@ export class LiveMessage {
         console.log(gray(`Found ${count} chapters`))
     }
 
+    chapterUpdated(chapter: Chapters) {
+        const text = `Updated chapter ${chapter.canonicalName}`
+        console.log(yellow(text))
+        return { code: CodeList.chapter_updated, message: text }
+    }
+
+    chapterUpdateFailed(error: any, chapter: Chapters) {
+        const text = `Failed to update chapter ${chapter.canonicalName}\n${error.message}`;
+        console.log(magenta(text))
+        return { code: CodeList.chapter_update_failed, message: text }
+    }
+
+    async chapterIsPremium(): Promise<ReturnObject> {
+        const text = "Chapter is premium";
+        console.log(red(text));
+        await this._sent?.edit(text, { code: true }).then((msg: Message) => msg.bin(this._message, true))
+        return { code: CodeList.chapter_premium, message: text }
+
+    }
+
+    async chapterAlreadyParsed(chapter: Chapters): Promise<ReturnObject> {
+        const msg = `Chapter ${chapter.canonicalName} has already been parsed`
+        console.log(gray(msg))
+        return { code: CodeList.chapter_already_parsed, message: msg }
+    }
 
 
     async scrapeCompleted(): Promise<ReturnObject> {
-        const msg = `Scrape finished`;
-        console.log(blue(msg))
+        const text = `Scrape finished`;
+        console.log(blue(text))
         if (this._sent) this._sent.expire(this._message, null, 1)
-        if (this._message) this._message.reply(msg, { code: true }).then((msg: Message) => msg.bin(this._message, true))
-        return { code: CodeList.success, message: msg }
+        if (this._message) this._message.reply(text, { code: true }).then((msg: Message) => msg.bin(this._message, true))
+        return { code: CodeList.success, message: text }
     }
 }
