@@ -1,10 +1,11 @@
 import { Message } from "discord.js";
-import { usageMessage } from "../../funcs/commandTools";
+import { usageMessage, blue } from "../../funcs/commandTools";
 import { MessageEmbed } from "discord.js";
-import { config } from "../../models";
+import { config, Chapter } from "../../models";
 import { findNovel } from "../../babel/novel/findNovel";
 import { printTimeDiff } from "../../funcs/timeDifference";
 import { isNumber } from "util";
+import { EpubGenerator, EpubParams, EpubType } from "../../funcs/generateEpub";
 
 export default {
     name: ['epub'],
@@ -29,6 +30,23 @@ export default {
 
         console.log(novel.name.canonical, from, to)
 
+        let chapters = await Chapter.find({ novelId: novel.babelId }).sort("num");
+        chapters = chapters.filter(c => c.content.babel || c.content.proofread)
+
+        const files = await EpubGenerator(novel, chapters, HandleParams(params))
+        console.log(blue(files))
         //await message.channel.send(emb).then((msg: Message) => msg.bin(message));
     }
 };
+
+
+function HandleParams(params: string[]): EpubParams {
+    const pms = {
+        type: EpubType.proofread
+    }
+
+    if (params.includes('babel')) pms.type = EpubType.babel;
+    else if(params.includes('initial')) pms.type = EpubType.initial;
+
+    return pms;
+}

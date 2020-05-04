@@ -57,6 +57,7 @@ class Novels {
     @prop() status: NovelStatus;
     @prop() translation: NovelTranslations;
     @prop() timestamp: NovelTimestamp;
+    @prop() epubSplit: number;
 }
 
 const Novel = getModelForClass(Novels);

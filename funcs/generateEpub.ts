@@ -1,86 +1,125 @@
-const fs = require('fs')
-const HeavyEpub = require("epub-gen-funstory");
+import { Novels, Novel } from "../models/novel.model";
+import { Chapters } from "../models/chapter.model";
 
+import { existsSync, mkdirSync, statSync, unlinkSync } from 'fs';
+import { resolve } from "dns";
+import { red } from "./commandTools";
+const Epub = require("epub-gen-funstory");
 
+export enum EpubType {
+    initial = 'initial',
+    babel = 'babel',
+    proofread = 'proofread'
+}
 
-const generateEpub = async (novel, chapters, params) => {
-    return await new Promise(resolve => {
-        let author = [novel.authorEn, novel.author].filter(n => n).join(" | ")
-        let fn = `${novel.canonicalName}_${chapters.length}_${chapters[0].index}-${chapters[chapters.length - 1].index}`
+export interface EpubParams {
+    type: EpubType
+}
 
-        let path = `./static/epub`
-        if (!fs.existsSync(path)) fs.mkdirSync(path)
-        path = `${path}/${params.ios ? 'ios_' : ''}${fn}.epub`
-        console.log("Generate epub", path)
-        if (fs.existsSync(path) && !params.epub) {
-            return resolve(path)
-        }
+interface EpubOption {
+    title: string,
+    author: string,
+    output: string,
+    appendChapterTitles?: boolean,
+    cover: string,
+    content: EpubChapter[];
+    css?: string,
+    lang?: string,
+}
 
-        chapters = chapters.filter(c => c.index > 0).map(c => {
-            if (c.epub) return c
-            let stripped = c.chapterContent.replace("</p>", "\n").replace("<p>", "")
-            let words = stripped.split(/\s+/gi).length
-            stripped = `<div style="font-size: 70%;">${stripped.length} characters | ${words} words</div>`
-            if (params.ios) c.epub = {
-                title: c.name,
-                data: `${c.chapterContent}${stripped}`,
-            }
-            else c.epub = {
-                title: c.name,
-                content: `${c.chapterContent}${stripped}`,
-            }
-            delete c.chapterContent
-            return c
+interface EpubChapter {
+    title: string,
+    nr: number,
+    data: string,
+    author?: string,
+    excludeFromToc?: boolean,
+    beforeToc?: boolean,
+    filename?: string,
+}
+
+export function EpubGenerator(novel: Novels, chapters: Chapters[], params: EpubParams): Promise<string[]> {
+    return new Promise(async (resolve, reject) => {
+        const epubContent = handleChapters(chapters, params);
+
+        const values = await splitEpub(novel, epubContent)
+
+        const epubs = values.filter(v => v).flat().sort((a, b) => {
+            const endingA = a.replace(".epub", "").split("-");
+            const endingB = b.replace(".epub", "").split("-");
+
+            return parseInt(endingA.last()) - parseInt(endingB.last())
         })
+        console.log(epubs)
+
+        resolve(epubs)
+    });
+}
 
 
-        const fullEpub = path.replace(".epub", "_full.epub")
-        const [coverName, coverAttachment] = novel.DiscordCover()
-        const option = {
-            title: `${novel.name} ${chapters[0].index}-${chapters[chapters.length - 1].index}`,
-            author: params.ios ? author : [author],
-            output: path,
-            appendChapterTitles: true,
-            cover: coverAttachment ? coverAttachment.replace("attachment://", '') : null,
-            [params.ios ? 'content' : 'chapters']: chapters.map(c => c.epub)
+
+
+
+function handleChapters(chapters: Chapters[], params: EpubParams): EpubChapter[] {
+    return chapters.map(chapter => {
+        const titleWords = 6;
+        let content: string = chapter.content[params.type] || chapter.content.babel || chapter.content.initial;
+        content = content.replace(/\<p\>/gi, "").replace("/\<\/\>/gi", "\n");
+        const words = content.split(/\s+/gi);
+        const footer = `<div style="font-size: 70%;">${content.length} characters | ${words} words</div>`
+
+        const title = chapter?.name.length > 5 ? chapter.name : `${chapter.name} - ${words.slice(0, words.length < titleWords ? words.length : titleWords)}`;
+
+        const epubChapter: EpubChapter = {
+            title: title,
+            nr: chapter.num / 10000,
+            data: `${content}<hr/>${footer}`
         };
 
-        if (fs.existsSync(fullEpub)) {
-            resolve(SplitEpub(novel, fullEpub, chapters, params))
-        } else if (params.ios) {
-            new HeavyEpub(option).promise
-                .then(async () => resolve(SplitEpub(novel, path, chapters, params)))
-                .catch(err => {
-                    console.log(err.message)
-                    resolve(null)
-                })
-        } else {
-            Epub.createFile(option)
-            .then(async () => resolve(SplitEpub(novel, path, chapters, params)))
-            .catch(err => {
-                console.log(err.message)
-                resolve(null)
-            })
-        }
+        return epubChapter;
     })
+}
 
-};
-
-
-const SplitEpub = async (novel, path, chapters, params) => {
-    console.log("split epub", path)
+function splitEpub(novel: Novels, chapters: EpubChapter[]): Promise<string[]> {
     return new Promise(async resolve => {
-        const stats = fs.statSync(path)
-        const fileSizeInMegabytes = stats["size"] / 1000000.0
+        if (!chapters.length) return resolve(null);
+        console.log(chapters.length, chapters.last().nr)
+        const split = novel.epubSplit || 10;
+        const content = chapters.slice(0, split);
+        const filename = `${novel.name.canonical}_${content.length}_${content[0].nr}-${content.last().nr}.epub`;
+        const title = `${novel.name.en} ${content[0].nr} - ${content.last().nr}`;
 
-        if (fileSizeInMegabytes > 8) {
-            if (!path.endsWith("_full.epub")) {
-                const fullEpub = path.replace(".epub", "_full.epub")
-                if (fs.existsSync(fullEpub)) fs.unlinkSync(fullEpub)
-                fs.renameSync(path, fullEpub)
+        let epubFolder = './static/epub';
+        if (!existsSync(epubFolder)) mkdirSync(epubFolder);
+        const epubPath = `${epubFolder}/${filename}`;
+        if (existsSync(epubPath)) {
+            chapters.splice(0, split);
+            const nextFiles = await splitEpub(novel, chapters) || [];
+            return resolve([...nextFiles, epubPath])
+        }
+
+        const option: EpubOption = {
+            title: title,
+            author: [novel.author.enName, novel.author.name].filter(n => n).join(" | "),
+            output: epubPath,
+            cover: novel.cover,
+            content: content
+        }
+
+        new Epub(option).promise.then(async () => {
+            const stats = statSync(epubPath);
+            const fileSizeInMegabytes = stats["size"] / 1000000.0
+
+            const megaLimit = 1;
+            if (fileSizeInMegabytes < megaLimit) {
+                chapters.splice(0, split);
+                const nextFiles = await splitEpub(novel, chapters) || [];
+                return resolve([...nextFiles, epubPath])
             }
-            const splitTo = Math.ceil(fileSizeInMegabytes / 8)
-            //const chapterCount = Math.floor(chapters.length / splitTo)
+
+
+            unlinkSync(epubPath)
+
+            const splitTo = Math.ceil(fileSizeInMegabytes / megaLimit)
             let chapterCount = 1500
 
             if (chapters.length >= 1200)
@@ -91,16 +130,15 @@ const SplitEpub = async (novel, path, chapters, params) => {
                 chapterCount = 500
             else if (chapters.length >= 500)
                 chapterCount = Math.floor(chapters.length / splitTo)
-            let paths = []
-            while (chapters.length) {
-                const chaps = chapters.splice(0, chapterCount)
-                const p = await generateEpub(novel, chaps, params)
-                paths.push(p)
-            }
-            resolve(paths)
-        }
-        else resolve(path)
-    })
-}
 
-module.exports = generateEpub
+            await Novel.findOneAndUpdate({ babelId: novel.babelId }, { epubSplit: chapterCount });
+            novel.epubSplit = chapterCount;
+
+            return resolve(splitEpub(novel, content))
+        }).catch(err => {
+            console.log(red(err.message));
+            resolve(null)
+        })
+    })
+
+}
